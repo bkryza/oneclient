@@ -20,8 +20,13 @@
 #include <cstdint>
 #include <functional>
 #include <mutex>
-#include <shared_mutex>
 #include <vector>
+
+#if defined(USE_BOOST_SHARED_MUTEX)
+#include <boost/thread/shared_mutex.hpp>
+#else
+#include <shared_mutex>
+#endif
 
 namespace one {
 namespace communication {
@@ -98,7 +103,11 @@ private:
     const std::uint64_t m_streamId;
     std::function<void()> m_unregister;
     std::atomic<std::uint64_t> m_sequenceId{0};
+#if !defined(USE_BOOST_SHARED_MUTEX)
     std::shared_timed_mutex m_bufferMutex;
+#else
+    boost::shared_mutex m_bufferMutex;
+#endif
     tbb::concurrent_priority_queue<ClientMessagePtr, StreamLess> m_buffer;
 };
 
@@ -135,7 +144,11 @@ template <class Communicator> void TypedStream<Communicator>::close()
 
 template <class Communicator> void TypedStream<Communicator>::reset()
 {
+#if !defined(USE_BOOST_SHARED_MUTEX)
     std::lock_guard<std::shared_timed_mutex> lock{m_bufferMutex};
+#else
+    std::lock_guard<boost::shared_mutex> lock{m_bufferMutex};
+#endif
     m_sequenceId = 0;
     std::vector<ClientMessagePtr> processed;
     for (ClientMessagePtr it; m_buffer.try_pop(it);) {
@@ -152,7 +165,11 @@ void TypedStream<Communicator>::saveAndPass(ClientMessagePtr msg)
     auto msgCopy = std::make_unique<clproto::ClientMessage>(*msg);
 
     {
-        std::shared_lock<std::shared_timed_mutex> lock{m_bufferMutex};
+#if !defined(USE_BOOST_SHARED_MUTEX)
+        std::lock_guard<std::shared_timed_mutex> lock{m_bufferMutex};
+#else
+        std::lock_guard<boost::shared_mutex> lock{m_bufferMutex};
+#endif
         m_buffer.emplace(std::move(msgCopy));
     }
 
@@ -167,7 +184,11 @@ void TypedStream<Communicator>::handleMessageRequest(
     processed.reserve(
         msg.upper_sequence_number() - msg.lower_sequence_number() + 1);
 
-    std::shared_lock<std::shared_timed_mutex> lock{m_bufferMutex};
+#if !defined(USE_BOOST_SHARED_MUTEX)
+    std::lock_guard<std::shared_timed_mutex> lock{m_bufferMutex};
+#else
+    std::lock_guard<boost::shared_mutex> lock{m_bufferMutex};
+#endif
     for (ClientMessagePtr it; m_buffer.try_pop(it);) {
         if (it->message_stream().sequence_number() <=
             msg.upper_sequence_number()) {
@@ -194,7 +215,11 @@ template <class Communicator>
 void TypedStream<Communicator>::handleMessageAcknowledgement(
     const clproto::MessageAcknowledgement &msg)
 {
-    std::shared_lock<std::shared_timed_mutex> lock{m_bufferMutex};
+#if !defined(USE_BOOST_SHARED_MUTEX)
+    std::lock_guard<std::shared_timed_mutex> lock{m_bufferMutex};
+#else
+    std::lock_guard<boost::shared_mutex> lock{m_bufferMutex};
+#endif
     for (ClientMessagePtr it; m_buffer.try_pop(it);) {
         if (it->message_stream().sequence_number() > msg.sequence_number()) {
             m_buffer.emplace(std::move(it));

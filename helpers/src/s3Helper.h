@@ -16,6 +16,10 @@
 #include <map>
 #include <sstream>
 
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
+
 namespace Aws {
 namespace S3 {
 class S3Client;
@@ -127,5 +131,7 @@ private:
 
 } // namespace helpers
 } // namespace one
+
+#pragma clang diagnostic pop
 
 #endif // HELPERS_S3_HELPER_H

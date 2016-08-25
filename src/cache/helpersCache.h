@@ -109,8 +109,13 @@ private:
 
     std::thread m_thread;
 
+#if WITH_RADOS
     helpers::StorageHelperFactory m_helperFactory{
-        m_ioService, m_ioService, m_ioService, m_ioService, m_communicator};
+        m_ioService, m_ioService, m_ioService, m_bufferAgent};
+#else
+    helpers::StorageHelperFactory m_helperFactory{
+        m_ioService, m_ioService, m_bufferAgent};
+#endif
 
     StorageAccessManager m_storageAccessManager;
 };

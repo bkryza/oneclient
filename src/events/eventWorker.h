@@ -39,6 +39,22 @@ public:
      * Constructor.
      * Calls @c LowerLayer constructor and sets up IO service.
      */
+#if defined(__APPLE__)
+    template <class... Args>
+    EventWorker(Args &&... args)
+        : LowerLayer{std::forward<Args>(args)...}
+        , m_ioService{1}
+        , m_idleWork{asio::make_work(m_ioService)}
+        , m_worker{[=] { 
+            etls::utils::nameThread("EventWorker"); m_ioService.run(); 
+        }}
+    {
+        
+        LowerLayer::setPeriodicTriggerHandler([this] {
+            asio::post(m_ioService, [this] { LowerLayer::trigger(); });
+        });
+    }
+#else
     template <class... Args>
     EventWorker(Args &&... args)
         : LowerLayer{std::forward<Args>(args)...}
@@ -53,7 +69,8 @@ public:
             asio::post(m_ioService, [this] { LowerLayer::trigger(); });
         });
     }
-
+#endif
+    
     /**
      * Destructor.
      * Stops the IO service and joins worker thread.

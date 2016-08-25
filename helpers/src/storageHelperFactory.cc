@@ -9,7 +9,11 @@
 #include "helpers/storageHelperFactory.h"
 
 #include "buffering/bufferAgent.h"
+
+#if WITH_RADOS
 #include "cephHelper.h"
+#endif
+
 #include "directIOHelper.h"
 #include "keyValueAdapter.h"
 #include "proxyIOHelper.h"
@@ -25,12 +29,19 @@ namespace one {
 namespace helpers {
 
 #ifdef BUILD_PROXY_IO
-StorageHelperFactory::StorageHelperFactory(asio::io_service &cephService,
+StorageHelperFactory::StorageHelperFactory(
+#if WITH_RADOS
+    asio::io_service &cephService,
+#endif
     asio::io_service &dioService, asio::io_service &kvS3Service,
     asio::io_service &kvSwiftService,
     communication::Communicator &communicator,
     std::size_t bufferSchedulerWorkers)
-    : m_cephService{cephService}
+    : 
+#if WITH_RADOS
+    m_cephService{cephService}, 
+#endif 
+    m_dioService{dioService}
     , m_dioService{dioService}
     , m_kvS3Service{kvS3Service}
     , m_kvSwiftService{kvSwiftService}
@@ -38,13 +49,20 @@ StorageHelperFactory::StorageHelperFactory(asio::io_service &cephService,
     , m_communicator{communicator}
 {
 }
+
 #else
-StorageHelperFactory::StorageHelperFactory(asio::io_service &cephService,
+StorageHelperFactory::StorageHelperFactory(
+#if WITH_RADOS
+    asio::io_service &cephService,
+#endif
     asio::io_service &dioService, asio::io_service &kvS3Service,
     asio::io_service &kvSwiftService,
     std::size_t bufferSchedulerWorkers)
-    : m_cephService{cephService}
-    , m_dioService{dioService}
+    : 
+#if WITH_RADOS
+    m_cephService{cephService},
+#endif
+    m_dioService{dioService}
     , m_kvS3Service{kvS3Service}
     , m_kvSwiftService{kvSwiftService}
     , m_scheduler{std::make_unique<Scheduler>(bufferSchedulerWorkers)}
@@ -58,10 +76,12 @@ std::shared_ptr<IStorageHelper> StorageHelperFactory::getStorageHelper(
     const std::string &sh_name,
     const std::unordered_map<std::string, std::string> &args)
 {
+#if WITH_RADOS
     if (sh_name == CEPH_HELPER_NAME)
         return std::make_shared<buffering::BufferAgent>(
             buffering::BufferLimits{},
             std::make_unique<CephHelper>(args, m_cephService), *m_scheduler);
+#endif
 
     if (sh_name == DIRECT_IO_HELPER_NAME) {
 #ifdef __linux__

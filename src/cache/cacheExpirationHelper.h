@@ -20,6 +20,10 @@
 #include <shared_mutex>
 #include <string>
 
+#if defined(USE_BOOST_SHARED_MUTEX)
+#include <boost/thread/shared_mutex.hpp>
+#endif
+
 namespace one {
 namespace client {
 
@@ -256,7 +260,11 @@ private:
         Set *bucket = nullptr;
     };
 
+#if !defined(USE_BOOST_SHARED_MUTEX)
     std::shared_timed_mutex m_mutex;
+#else
+    boost::shared_mutex m_mutex;
+#endif
     tbb::concurrent_hash_map<Key, ExpirationDetails, HashCompare> m_expDetails;
     std::array<std::unique_ptr<Set>, BucketsCount> m_buckets;
 };

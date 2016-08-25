@@ -14,7 +14,12 @@
 #include <memory>
 #include <mutex>
 #include <list>
+
+#if defined(USE_BOOST_SHARED_MUTEX)
+#include <boost/thread/shared_mutex.hpp>
+#else
 #include <shared_mutex>
+#endif
 
 namespace one {
 
@@ -40,10 +45,16 @@ private:
     std::shared_ptr<Options> m_options;
     std::shared_ptr<Scheduler> m_scheduler;
     std::shared_ptr<communication::Communicator> m_communicator;
-
+    
+#if !defined(USE_BOOST_SHARED_MUTEX)
     mutable std::shared_timed_mutex m_optionsMutex;
     mutable std::shared_timed_mutex m_schedulerMutex;
     mutable std::shared_timed_mutex m_communicatorMutex;
+#else
+    mutable boost::shared_mutex m_optionsMutex;
+    mutable boost::shared_mutex m_schedulerMutex;
+    mutable boost::shared_mutex m_communicatorMutex;
+#endif
 };
 
 } // namespace client

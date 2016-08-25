@@ -34,10 +34,16 @@ HelpersCache::HelpersCache(
     , m_scheduler{scheduler}
     , m_storageAccessManager{communicator, m_helperFactory}
 {
-    m_thread = std::thread{[this] {
+#if defined(__APPLE__)
+    m_thread = std::thread{[this] { 
         etls::utils::nameThread("HelpersCache");
-        m_ioService.run();
+        m_ioService.run(); 
     }};
+    
+#else
+    m_thread = std::thread{[this] { m_ioService.run(); }};
+    etls::utils::nameThread(m_thread, "HelpersCache");
+#endif
 }
 
 HelpersCache::~HelpersCache()
@@ -145,6 +151,18 @@ void HelpersCache::handleStorageTestFile(
     try {
         auto helper = m_storageAccessManager.verifyStorageTestFile(*testFile);
 
+#if defined(__APPLE__)
+        //
+        // TODO: Uncomment and make it compile in clang...
+        //
+        // if (helper == nullptr) {
+        //     m_scheduler.schedule(
+        //         VERIFY_TEST_FILE_DELAY, [ =, testFile = std::move(testFile) ] {
+        //             handleStorageTestFile(testFile, storageId, attempts - 1);
+        //         });
+        //     return;
+        // }
+#else
         if (helper == nullptr) {
             m_scheduler.schedule(
                 VERIFY_TEST_FILE_DELAY, [ =, testFile = std::move(testFile) ] {
@@ -152,6 +170,7 @@ void HelpersCache::handleStorageTestFile(
                 });
             return;
         }
+#endif
 
         auto fileContent =
             m_storageAccessManager.modifyStorageTestFile(helper, *testFile);

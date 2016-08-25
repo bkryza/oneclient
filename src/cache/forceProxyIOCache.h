@@ -13,6 +13,10 @@
 #include <shared_mutex>
 #include <tbb/concurrent_unordered_set.h>
 
+#if defined(USE_BOOST_SHARED_MUTEX)
+#include <boost/thread/shared_mutex.hpp>
+#endif
+
 namespace one {
 namespace client {
 
@@ -25,7 +29,12 @@ class ForceProxyIOCache {
 private:
     tbb::concurrent_unordered_set<std::string> m_cache;
     FsSubscriptions &m_fsSubscriptions;
+    
+#if !defined(USE_BOOST_SHARED_MUTEX)
     std::shared_timed_mutex m_cacheMutex;
+#else
+    boost::shared_mutex m_cacheMutex;
+#endif
 
 public:
     /**

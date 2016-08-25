@@ -16,6 +16,12 @@ set(HELPERS_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 file(GLOB_RECURSE HELPER_SOURCES *.cc *.h)
+
+# Disable Ceph on OSX
+if(APPLE)
+list(REMOVE_ITEM HELPER_SOURCES  ${CMAKE_CURRENT_SOURCE_DIR}/cephHelper.cc)
+endif(APPLE)
+
 add_library(helpers OBJECT ${HELPER_SOURCES})
 add_dependencies(helpers clproto)
 target_include_directories(helpers SYSTEM PRIVATE

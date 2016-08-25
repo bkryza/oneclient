@@ -253,8 +253,13 @@ TLSSocket::certificateChain() const
 std::vector<asio::ip::basic_resolver_entry<asio::ip::tcp>>
 TLSSocket::shuffleEndpoints(asio::ip::tcp::resolver::iterator iterator)
 {
+#if !defined(__APPLE__)
     static thread_local std::random_device rd;
     static thread_local std::default_random_engine engine{rd()};
+#else
+    static std::random_device rd;
+    static std::default_random_engine engine{rd()};
+#endif
 
     std::vector<decltype(iterator)::value_type> endpoints;
     std::move(iterator, decltype(iterator){}, std::back_inserter(endpoints));

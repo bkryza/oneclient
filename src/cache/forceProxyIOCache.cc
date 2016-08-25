@@ -18,14 +18,23 @@ ForceProxyIOCache::ForceProxyIOCache(FsSubscriptions &fsSubscriptions)
 
 bool ForceProxyIOCache::contains(const std::string &fileUuid)
 {
+#if !defined(USE_BOOST_SHARED_MUTEX)
     std::shared_lock<std::shared_timed_mutex> lock{m_cacheMutex};
+#else
+    std::shared_lock<boost::shared_mutex> lock{m_cacheMutex};
+#endif
+
     return m_cache.find(fileUuid) != m_cache.end();
 }
 
 void ForceProxyIOCache::insert(const std::string &fileUuid)
 {
     {
+#if !defined(USE_BOOST_SHARED_MUTEX)
         std::shared_lock<std::shared_timed_mutex> lock{m_cacheMutex};
+#else
+        std::shared_lock<boost::shared_mutex> lock{m_cacheMutex};
+#endif
         m_cache.insert(fileUuid);
     }
     m_fsSubscriptions.addPermissionChangedSubscription(fileUuid);
@@ -34,7 +43,11 @@ void ForceProxyIOCache::insert(const std::string &fileUuid)
 void ForceProxyIOCache::erase(const std::string &fileUuid)
 {
     {
-        std::lock_guard<std::shared_timed_mutex> guard{m_cacheMutex};
+#if !defined(USE_BOOST_SHARED_MUTEX)
+        std::shared_lock<std::shared_timed_mutex> lock{m_cacheMutex};
+#else
+        std::shared_lock<boost::shared_mutex> lock{m_cacheMutex};
+#endif       
         m_cache.unsafe_erase(fileUuid);
     }
     m_fsSubscriptions.removePermissionChangedSubscription(fileUuid);

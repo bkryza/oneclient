@@ -17,9 +17,14 @@
 
 #include <functional>
 #include <mutex>
-#include <shared_mutex>
 #include <utility>
 #include <vector>
+
+#if defined(USE_BOOST_SHARED_MUTEX)
+#include <boost/thread/shared_mutex.hpp>
+#else
+#include <shared_mutex>
+#endif
 
 namespace one {
 namespace communication {

@@ -11,6 +11,10 @@ set(CMAKE_FIND_FRAMEWORK LAST)
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${PROJECT_SOURCE_DIR}/helpers/cmake)
 
+if(APPLE)
+set (CMAKE_CXX_FLAGS "-std=c++14 -stdlib=libc++ -Wno-overloaded-virtual -D_FILE_OFFSET_BITS=64 -D_DARWIN_USE_64_BIT_INODE")
+endif(APPLE)
+
 if(NOT SYSCONF_INSTALL_DIR)
     set(SYSCONF_INSTALL_DIR etc CACHE PATH "")
 endif()
@@ -78,8 +82,13 @@ find_library(ZLIB_LIBRARY NAMES z)
 find_library(RT_LIBRARY rt)
 find_library(DL_LIBRARY dl)
 
-# Rados library
-find_library(RADOS_LIBRARY rados)
+# Rados library (not available on OSX)
+if(NOT APPLE)
+    find_library(RADOS_LIBRARY rados)
+add_definitions(-DWITH_RADOS=1)
+elseif(APPLE)
+    add_definitions(-DWITH_RADOS=0 -DUSE_BOOST_SHARED_MUTEX)
+endif(NOT APPLE)
 
 # AWS SDK library
 find_library(AWS_SKD_CORE_LIBRARY aws-cpp-sdk-core)
@@ -111,11 +120,22 @@ set(MAIN_SOURCE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cc)
 list(REMOVE_ITEM SOURCES ${MAIN_SOURCE_FILE})
 
 # Set up compile flags
+if(APPLE)
 set(PLATFORM_EXTRA_LIBS
     ${CMAKE_THREAD_LIBS_INIT}
     ${LTDL_LIBRARY}
     ${ZLIB_LIBRARY}
-    ${DL_LIBRARY})
+    ${DL_LIBRARY}
+    ${S3_LIBRARY})
+elseif(NOT APPLE)
+set(PLATFORM_EXTRA_LIBS
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${LTDL_LIBRARY}
+    ${ZLIB_LIBRARY}
+    ${DL_LIBRARY}
+    ${RADOS_LIBRARY}
+    ${S3_LIBRARY})
+endif(APPLE)
 
 if(STATIC_LIBSTDCPP)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")

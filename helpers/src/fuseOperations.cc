@@ -9,7 +9,10 @@
 #include "fuseOperations.h"
 
 namespace {
-thread_local bool fuseSessionActive = false;
+#if !defined(__APPLE__)
+thread_local 
+#endif
+bool fuseSessionActive = false;
 } // namespace
 
 namespace one {

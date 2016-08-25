@@ -28,7 +28,9 @@ class Scheduler;
 
 namespace helpers {
 
+#if WITH_RADOS
 constexpr auto CEPH_HELPER_NAME = "Ceph";
+#endif
 constexpr auto DIRECT_IO_HELPER_NAME = "DirectIO";
 constexpr auto PROXY_IO_HELPER_NAME = "ProxyIO";
 constexpr auto S3_HELPER_NAME = "AmazonS3";
@@ -40,7 +42,10 @@ constexpr auto SWIFT_HELPER_NAME = "Swift";
 class StorageHelperFactory {
 public:
 #ifdef BUILD_PROXY_IO
-    StorageHelperFactory(asio::io_service &ceph_service,
+    StorageHelperFactory(
+#if WITH_RADOS
+        asio::io_service &ceph_service,
+#endif
         asio::io_service &dio_service, asio::io_service &kvS3Service,
         asio::io_service &kvSwiftService,
         communication::Communicator &m_communicator,
@@ -66,7 +71,9 @@ public:
         const std::unordered_map<std::string, std::string> &args);
 
 private:
+#if WITH_RADOS
     asio::io_service &m_cephService;
+#endif
     asio::io_service &m_dioService;
     asio::io_service &m_kvS3Service;
     asio::io_service &m_kvSwiftService;

@@ -65,7 +65,9 @@ private:
     bool verifyStorageTestFile(std::shared_ptr<helpers::IStorageHelper> helper,
         const messages::fuse::StorageTestFile &testFile);
 
+#if !defined(__APPLE__)
     communication::Communicator &m_communicator;
+#endif
     helpers::StorageHelperFactory &m_helperFactory;
     std::vector<boost::filesystem::path> m_mountPoints;
 };

@@ -35,17 +35,19 @@ std::vector<boost::filesystem::path> getMountPoints()
 {
     std::vector<boost::filesystem::path> mountPoints;
 
-    auto res = getfsstat(NULL, 0, MNT_NOWAIT);
-    if (res < 0) {
+    int mounted_filesystem_count = getfsstat(NULL, 0, MNT_NOWAIT);
+    if (mounted_filesystem_count < 0) {
         LOG(ERROR) << "Cannot count mounted filesystems.";
         return mountPoints;
     }
 
-    std::vector<struct statfs> stats(fs_num);
+    std::vector<struct statfs> stats(mounted_filesystem_count);
 
-    res = getfsstat(stats.data(), sizeof(struct statfs) * res, MNT_NOWAIT);
-    if (res < 0) {
-        LOG(ERROR) << "Cannot get fsstat.";
+    mounted_filesystem_count = getfsstat(stats.data(), 
+        sizeof(struct statfs) * mounted_filesystem_count, MNT_NOWAIT);
+
+    if (mounted_filesystem_count < 0) {
+        LOG(ERROR) << "Cannot get fsstat data.";
         return mountPoints;
     }
 
@@ -95,9 +97,12 @@ std::vector<boost::filesystem::path> getMountPoints()
 StorageAccessManager::StorageAccessManager(
     communication::Communicator &communicator,
     helpers::StorageHelperFactory &helperFactory)
-    : m_communicator{communicator}
-    , m_helperFactory{helperFactory}
-    , m_mountPoints{getMountPoints()}
+    : 
+#if !defined(__APPLE__)
+    m_communicator{communicator},
+#endif
+    m_helperFactory{helperFactory},
+    m_mountPoints{getMountPoints()}
 {
 }
 
