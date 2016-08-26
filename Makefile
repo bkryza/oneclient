@@ -78,6 +78,17 @@ rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
 
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/local/Cellar/cmake/3.5.2/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: install/local
+
+.PHONY : install/local/fast
+
 # Special rule for the target list_install_components
 list_install_components:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
@@ -99,28 +110,6 @@ install/fast: preinstall/fast
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
 	/usr/local/Cellar/cmake/3.5.2/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
-
-# Special rule for the target test
-test:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
-	/usr/local/Cellar/cmake/3.5.2/bin/ctest --force-new-ctest-process $(ARGS)
-.PHONY : test
-
-# Special rule for the target test
-test/fast: test
-
-.PHONY : test/fast
-
-# Special rule for the target install/local
-install/local: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/usr/local/Cellar/cmake/3.5.2/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local
-
-# Special rule for the target install/local
-install/local/fast: install/local
-
-.PHONY : install/local/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -155,19 +144,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named oneclient
-
-# Build rule for target.
-oneclient: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 oneclient
-.PHONY : oneclient
-
-# fast build rule for target.
-oneclient/fast:
-	$(MAKE) -f CMakeFiles/oneclient.dir/build.make CMakeFiles/oneclient.dir/build
-.PHONY : oneclient/fast
-
-#=============================================================================
 # Target rules for targets named client
 
 # Build rule for target.
@@ -179,6 +155,19 @@ client: cmake_check_build_system
 client/fast:
 	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/build
 .PHONY : client/fast
+
+#=============================================================================
+# Target rules for targets named oneclient
+
+# Build rule for target.
+oneclient: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 oneclient
+.PHONY : oneclient
+
+# fast build rule for target.
+oneclient/fast:
+	$(MAKE) -f CMakeFiles/oneclient.dir/build.make CMakeFiles/oneclient.dir/build
+.PHONY : oneclient/fast
 
 #=============================================================================
 # Target rules for targets named libmacaroons
@@ -220,19 +209,6 @@ all_tests/fast:
 .PHONY : all_tests/fast
 
 #=============================================================================
-# Target rules for targets named refcount_test
-
-# Build rule for target.
-refcount_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 refcount_test
-.PHONY : refcount_test
-
-# fast build rule for target.
-refcount_test/fast:
-	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/CMakeFiles/refcount_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/CMakeFiles/refcount_test.dir/build
-.PHONY : refcount_test/fast
-
-#=============================================================================
 # Target rules for targets named crypto
 
 # Build rule for target.
@@ -257,6 +233,19 @@ thread_test: cmake_check_build_system
 thread_test/fast:
 	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/CMakeFiles/thread_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/CMakeFiles/thread_test.dir/build
 .PHONY : thread_test/fast
+
+#=============================================================================
+# Target rules for targets named refcount_test
+
+# Build rule for target.
+refcount_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 refcount_test
+.PHONY : refcount_test
+
+# fast build rule for target.
+refcount_test/fast:
+	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/CMakeFiles/refcount_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/CMakeFiles/refcount_test.dir/build
+.PHONY : refcount_test/fast
 
 #=============================================================================
 # Target rules for targets named constant_time_test
@@ -532,19 +521,6 @@ conf/fast:
 .PHONY : conf/fast
 
 #=============================================================================
-# Target rules for targets named chacha_test
-
-# Build rule for target.
-chacha_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 chacha_test
-.PHONY : chacha_test
-
-# fast build rule for target.
-chacha_test/fast:
-	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha_test.dir/build
-.PHONY : chacha_test/fast
-
-#=============================================================================
 # Target rules for targets named chacha
 
 # Build rule for target.
@@ -558,17 +534,17 @@ chacha/fast:
 .PHONY : chacha/fast
 
 #=============================================================================
-# Target rules for targets named poly1305
+# Target rules for targets named chacha_test
 
 # Build rule for target.
-poly1305: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 poly1305
-.PHONY : poly1305
+chacha_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 chacha_test
+.PHONY : chacha_test
 
 # fast build rule for target.
-poly1305/fast:
-	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/poly1305/CMakeFiles/poly1305.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/poly1305/CMakeFiles/poly1305.dir/build
-.PHONY : poly1305/fast
+chacha_test/fast:
+	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha_test.dir/build
+.PHONY : chacha_test/fast
 
 #=============================================================================
 # Target rules for targets named poly1305_test
@@ -582,6 +558,19 @@ poly1305_test: cmake_check_build_system
 poly1305_test/fast:
 	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/poly1305/CMakeFiles/poly1305_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/poly1305/CMakeFiles/poly1305_test.dir/build
 .PHONY : poly1305_test/fast
+
+#=============================================================================
+# Target rules for targets named poly1305
+
+# Build rule for target.
+poly1305: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 poly1305
+.PHONY : poly1305
+
+# fast build rule for target.
+poly1305/fast:
+	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/poly1305/CMakeFiles/poly1305.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/poly1305/CMakeFiles/poly1305.dir/build
+.PHONY : poly1305/fast
 
 #=============================================================================
 # Target rules for targets named ed25519_test
@@ -714,6 +703,19 @@ digest/fast:
 .PHONY : digest/fast
 
 #=============================================================================
+# Target rules for targets named cipher
+
+# Build rule for target.
+cipher: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 cipher
+.PHONY : cipher
+
+# fast build rule for target.
+cipher/fast:
+	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/cipher/CMakeFiles/cipher.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/cipher/CMakeFiles/cipher.dir/build
+.PHONY : cipher/fast
+
+#=============================================================================
 # Target rules for targets named aead_test
 
 # Build rule for target.
@@ -738,19 +740,6 @@ cipher_test: cmake_check_build_system
 cipher_test/fast:
 	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/cipher/CMakeFiles/cipher_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/cipher/CMakeFiles/cipher_test.dir/build
 .PHONY : cipher_test/fast
-
-#=============================================================================
-# Target rules for targets named cipher
-
-# Build rule for target.
-cipher: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 cipher
-.PHONY : cipher
-
-# fast build rule for target.
-cipher/fast:
-	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/cipher/CMakeFiles/cipher.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/cipher/CMakeFiles/cipher.dir/build
-.PHONY : cipher/fast
 
 #=============================================================================
 # Target rules for targets named rand
@@ -818,19 +807,6 @@ bn/fast:
 .PHONY : bn/fast
 
 #=============================================================================
-# Target rules for targets named obj_test
-
-# Build rule for target.
-obj_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 obj_test
-.PHONY : obj_test
-
-# fast build rule for target.
-obj_test/fast:
-	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/obj/CMakeFiles/obj_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/obj/CMakeFiles/obj_test.dir/build
-.PHONY : obj_test/fast
-
-#=============================================================================
 # Target rules for targets named obj
 
 # Build rule for target.
@@ -842,6 +818,19 @@ obj: cmake_check_build_system
 obj/fast:
 	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/obj/CMakeFiles/obj.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/obj/CMakeFiles/obj.dir/build
 .PHONY : obj/fast
+
+#=============================================================================
+# Target rules for targets named obj_test
+
+# Build rule for target.
+obj_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 obj_test
+.PHONY : obj_test
+
+# fast build rule for target.
+obj_test/fast:
+	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/obj/CMakeFiles/obj_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/obj/CMakeFiles/obj_test.dir/build
+.PHONY : obj_test/fast
 
 #=============================================================================
 # Target rules for targets named asn1_test
@@ -1091,6 +1080,19 @@ cmac/fast:
 .PHONY : cmac/fast
 
 #=============================================================================
+# Target rules for targets named evp_extra_test
+
+# Build rule for target.
+evp_extra_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 evp_extra_test
+.PHONY : evp_extra_test
+
+# fast build rule for target.
+evp_extra_test/fast:
+	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/evp/CMakeFiles/evp_extra_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/evp/CMakeFiles/evp_extra_test.dir/build
+.PHONY : evp_extra_test/fast
+
+#=============================================================================
 # Target rules for targets named evp_test
 
 # Build rule for target.
@@ -1117,19 +1119,6 @@ pbkdf_test/fast:
 .PHONY : pbkdf_test/fast
 
 #=============================================================================
-# Target rules for targets named evp_extra_test
-
-# Build rule for target.
-evp_extra_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 evp_extra_test
-.PHONY : evp_extra_test
-
-# fast build rule for target.
-evp_extra_test/fast:
-	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/evp/CMakeFiles/evp_extra_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/evp/CMakeFiles/evp_extra_test.dir/build
-.PHONY : evp_extra_test/fast
-
-#=============================================================================
 # Target rules for targets named evp
 
 # Build rule for target.
@@ -1143,19 +1132,6 @@ evp/fast:
 .PHONY : evp/fast
 
 #=============================================================================
-# Target rules for targets named hkdf_test
-
-# Build rule for target.
-hkdf_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 hkdf_test
-.PHONY : hkdf_test
-
-# fast build rule for target.
-hkdf_test/fast:
-	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/hkdf/CMakeFiles/hkdf_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/hkdf/CMakeFiles/hkdf_test.dir/build
-.PHONY : hkdf_test/fast
-
-#=============================================================================
 # Target rules for targets named hkdf
 
 # Build rule for target.
@@ -1167,6 +1143,19 @@ hkdf: cmake_check_build_system
 hkdf/fast:
 	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/hkdf/CMakeFiles/hkdf.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/hkdf/CMakeFiles/hkdf.dir/build
 .PHONY : hkdf/fast
+
+#=============================================================================
+# Target rules for targets named hkdf_test
+
+# Build rule for target.
+hkdf_test: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hkdf_test
+.PHONY : hkdf_test
+
+# fast build rule for target.
+hkdf_test/fast:
+	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/hkdf/CMakeFiles/hkdf_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/hkdf/CMakeFiles/hkdf_test.dir/build
+.PHONY : hkdf_test/fast
 
 #=============================================================================
 # Target rules for targets named pem
@@ -1609,578 +1598,6 @@ helpers: cmake_check_build_system
 helpers/fast:
 	$(MAKE) -f helpers/src/CMakeFiles/helpers.dir/build.make helpers/src/CMakeFiles/helpers.dir/build
 .PHONY : helpers/fast
-
-#=============================================================================
-# Target rules for targets named clientShared
-
-# Build rule for target.
-clientShared: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 clientShared
-.PHONY : clientShared
-
-# fast build rule for target.
-clientShared/fast:
-	$(MAKE) -f test/CMakeFiles/clientShared.dir/build.make test/CMakeFiles/clientShared.dir/build
-.PHONY : clientShared/fast
-
-#=============================================================================
-# Target rules for targets named example
-
-# Build rule for target.
-example: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 example
-.PHONY : example
-
-# fast build rule for target.
-example/fast:
-	$(MAKE) -f test/integration/CMakeFiles/example.dir/build.make test/integration/CMakeFiles/example.dir/build
-.PHONY : example/fast
-
-#=============================================================================
-# Target rules for targets named fslogic
-
-# Build rule for target.
-fslogic: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 fslogic
-.PHONY : fslogic
-
-# fast build rule for target.
-fslogic/fast:
-	$(MAKE) -f test/integration/CMakeFiles/fslogic.dir/build.make test/integration/CMakeFiles/fslogic.dir/build
-.PHONY : fslogic/fast
-
-#=============================================================================
-# Target rules for targets named events
-
-# Build rule for target.
-events: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 events
-.PHONY : events
-
-# fast build rule for target.
-events/fast:
-	$(MAKE) -f test/integration/CMakeFiles/events.dir/build.make test/integration/CMakeFiles/events.dir/build
-.PHONY : events/fast
-
-#=============================================================================
-# Target rules for targets named pythonProto
-
-# Build rule for target.
-pythonProto: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 pythonProto
-.PHONY : pythonProto
-
-# fast build rule for target.
-pythonProto/fast:
-	$(MAKE) -f test/integration/CMakeFiles/pythonProto.dir/build.make test/integration/CMakeFiles/pythonProto.dir/build
-.PHONY : pythonProto/fast
-
-#=============================================================================
-# Target rules for targets named appmock
-
-# Build rule for target.
-appmock: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 appmock
-.PHONY : appmock
-
-# fast build rule for target.
-appmock/fast:
-	$(MAKE) -f test/integration/CMakeFiles/appmock.dir/build.make test/integration/CMakeFiles/appmock.dir/build
-.PHONY : appmock/fast
-
-#=============================================================================
-# Target rules for targets named tokenHandler_test
-
-# Build rule for target.
-tokenHandler_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 tokenHandler_test
-.PHONY : tokenHandler_test
-
-# fast build rule for target.
-tokenHandler_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/tokenHandler_test.dir/build.make test/unit/CMakeFiles/tokenHandler_test.dir/build
-.PHONY : tokenHandler_test/fast
-
-#=============================================================================
-# Target rules for targets named options_test
-
-# Build rule for target.
-options_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 options_test
-.PHONY : options_test
-
-# fast build rule for target.
-options_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/options_test.dir/build.make test/unit/CMakeFiles/options_test.dir/build
-.PHONY : options_test/fast
-
-#=============================================================================
-# Target rules for targets named example_test_runtest
-
-# Build rule for target.
-example_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 example_test_runtest
-.PHONY : example_test_runtest
-
-# fast build rule for target.
-example_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/example_test_runtest.dir/build.make test/unit/CMakeFiles/example_test_runtest.dir/build
-.PHONY : example_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named subscriptions_test
-
-# Build rule for target.
-subscriptions_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 subscriptions_test
-.PHONY : subscriptions_test
-
-# fast build rule for target.
-subscriptions_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/subscriptions_test.dir/build.make test/unit/CMakeFiles/subscriptions_test.dir/build
-.PHONY : subscriptions_test/fast
-
-#=============================================================================
-# Target rules for targets named subscription_handler_test_runtest
-
-# Build rule for target.
-subscription_handler_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 subscription_handler_test_runtest
-.PHONY : subscription_handler_test_runtest
-
-# fast build rule for target.
-subscription_handler_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/subscription_handler_test_runtest.dir/build.make test/unit/CMakeFiles/subscription_handler_test_runtest.dir/build
-.PHONY : subscription_handler_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named subscription_handler_test
-
-# Build rule for target.
-subscription_handler_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 subscription_handler_test
-.PHONY : subscription_handler_test
-
-# fast build rule for target.
-subscription_handler_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/subscription_handler_test.dir/build.make test/unit/CMakeFiles/subscription_handler_test.dir/build
-.PHONY : subscription_handler_test/fast
-
-#=============================================================================
-# Target rules for targets named events_test_runtest
-
-# Build rule for target.
-events_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 events_test_runtest
-.PHONY : events_test_runtest
-
-# fast build rule for target.
-events_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/events_test_runtest.dir/build.make test/unit/CMakeFiles/events_test_runtest.dir/build
-.PHONY : events_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named events_test
-
-# Build rule for target.
-events_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 events_test
-.PHONY : events_test
-
-# fast build rule for target.
-events_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/events_test.dir/build.make test/unit/CMakeFiles/events_test.dir/build
-.PHONY : events_test/fast
-
-#=============================================================================
-# Target rules for targets named event_time_aggregator_test_runtest
-
-# Build rule for target.
-event_time_aggregator_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_time_aggregator_test_runtest
-.PHONY : event_time_aggregator_test_runtest
-
-# fast build rule for target.
-event_time_aggregator_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_time_aggregator_test_runtest.dir/build.make test/unit/CMakeFiles/event_time_aggregator_test_runtest.dir/build
-.PHONY : event_time_aggregator_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_size_aggregator_test_runtest
-
-# Build rule for target.
-event_size_aggregator_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_size_aggregator_test_runtest
-.PHONY : event_size_aggregator_test_runtest
-
-# fast build rule for target.
-event_size_aggregator_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_size_aggregator_test_runtest.dir/build.make test/unit/CMakeFiles/event_size_aggregator_test_runtest.dir/build
-.PHONY : event_size_aggregator_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_subscription_registry_test_runtest
-
-# Build rule for target.
-event_subscription_registry_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_subscription_registry_test_runtest
-.PHONY : event_subscription_registry_test_runtest
-
-# fast build rule for target.
-event_subscription_registry_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_subscription_registry_test_runtest.dir/build.make test/unit/CMakeFiles/event_subscription_registry_test_runtest.dir/build
-.PHONY : event_subscription_registry_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_size_aggregator_test
-
-# Build rule for target.
-event_size_aggregator_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_size_aggregator_test
-.PHONY : event_size_aggregator_test
-
-# fast build rule for target.
-event_size_aggregator_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_size_aggregator_test.dir/build.make test/unit/CMakeFiles/event_size_aggregator_test.dir/build
-.PHONY : event_size_aggregator_test/fast
-
-#=============================================================================
-# Target rules for targets named subscriptions_test_runtest
-
-# Build rule for target.
-subscriptions_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 subscriptions_test_runtest
-.PHONY : subscriptions_test_runtest
-
-# fast build rule for target.
-subscriptions_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/subscriptions_test_runtest.dir/build.make test/unit/CMakeFiles/subscriptions_test_runtest.dir/build
-.PHONY : subscriptions_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_handler_test
-
-# Build rule for target.
-event_handler_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_handler_test
-.PHONY : event_handler_test
-
-# fast build rule for target.
-event_handler_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_handler_test.dir/build.make test/unit/CMakeFiles/event_handler_test.dir/build
-.PHONY : event_handler_test/fast
-
-#=============================================================================
-# Target rules for targets named event_counter_aggregator_test_runtest
-
-# Build rule for target.
-event_counter_aggregator_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_counter_aggregator_test_runtest
-.PHONY : event_counter_aggregator_test_runtest
-
-# fast build rule for target.
-event_counter_aggregator_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_counter_aggregator_test_runtest.dir/build.make test/unit/CMakeFiles/event_counter_aggregator_test_runtest.dir/build
-.PHONY : event_counter_aggregator_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_manager_test
-
-# Build rule for target.
-event_manager_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_manager_test
-.PHONY : event_manager_test
-
-# fast build rule for target.
-event_manager_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_manager_test.dir/build.make test/unit/CMakeFiles/event_manager_test.dir/build
-.PHONY : event_manager_test/fast
-
-#=============================================================================
-# Target rules for targets named example_test
-
-# Build rule for target.
-example_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 example_test
-.PHONY : example_test
-
-# fast build rule for target.
-example_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/example_test.dir/build.make test/unit/CMakeFiles/example_test.dir/build
-.PHONY : example_test/fast
-
-#=============================================================================
-# Target rules for targets named event_communicator_test_runtest
-
-# Build rule for target.
-event_communicator_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_communicator_test_runtest
-.PHONY : event_communicator_test_runtest
-
-# fast build rule for target.
-event_communicator_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_communicator_test_runtest.dir/build.make test/unit/CMakeFiles/event_communicator_test_runtest.dir/build
-.PHONY : event_communicator_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_counter_aggregator_test
-
-# Build rule for target.
-event_counter_aggregator_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_counter_aggregator_test
-.PHONY : event_counter_aggregator_test
-
-# fast build rule for target.
-event_counter_aggregator_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_counter_aggregator_test.dir/build.make test/unit/CMakeFiles/event_counter_aggregator_test.dir/build
-.PHONY : event_counter_aggregator_test/fast
-
-#=============================================================================
-# Target rules for targets named cunit
-
-# Build rule for target.
-cunit: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 cunit
-.PHONY : cunit
-
-# fast build rule for target.
-cunit/fast:
-	$(MAKE) -f test/unit/CMakeFiles/cunit.dir/build.make test/unit/CMakeFiles/cunit.dir/build
-.PHONY : cunit/fast
-
-#=============================================================================
-# Target rules for targets named tokenHandler_test_runtest
-
-# Build rule for target.
-tokenHandler_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 tokenHandler_test_runtest
-.PHONY : tokenHandler_test_runtest
-
-# fast build rule for target.
-tokenHandler_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/tokenHandler_test_runtest.dir/build.make test/unit/CMakeFiles/tokenHandler_test_runtest.dir/build
-.PHONY : tokenHandler_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_communicator_test
-
-# Build rule for target.
-event_communicator_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_communicator_test
-.PHONY : event_communicator_test
-
-# fast build rule for target.
-event_communicator_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_communicator_test.dir/build.make test/unit/CMakeFiles/event_communicator_test.dir/build
-.PHONY : event_communicator_test/fast
-
-#=============================================================================
-# Target rules for targets named event_handler_test_runtest
-
-# Build rule for target.
-event_handler_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_handler_test_runtest
-.PHONY : event_handler_test_runtest
-
-# fast build rule for target.
-event_handler_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_handler_test_runtest.dir/build.make test/unit/CMakeFiles/event_handler_test_runtest.dir/build
-.PHONY : event_handler_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_subscription_registry_test
-
-# Build rule for target.
-event_subscription_registry_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_subscription_registry_test
-.PHONY : event_subscription_registry_test
-
-# fast build rule for target.
-event_subscription_registry_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_subscription_registry_test.dir/build.make test/unit/CMakeFiles/event_subscription_registry_test.dir/build
-.PHONY : event_subscription_registry_test/fast
-
-#=============================================================================
-# Target rules for targets named force_proxy_io_cache_test_runtest
-
-# Build rule for target.
-force_proxy_io_cache_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 force_proxy_io_cache_test_runtest
-.PHONY : force_proxy_io_cache_test_runtest
-
-# fast build rule for target.
-force_proxy_io_cache_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/force_proxy_io_cache_test_runtest.dir/build.make test/unit/CMakeFiles/force_proxy_io_cache_test_runtest.dir/build
-.PHONY : force_proxy_io_cache_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_buffers_test_runtest
-
-# Build rule for target.
-event_buffers_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_buffers_test_runtest
-.PHONY : event_buffers_test_runtest
-
-# fast build rule for target.
-event_buffers_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_buffers_test_runtest.dir/build.make test/unit/CMakeFiles/event_buffers_test_runtest.dir/build
-.PHONY : event_buffers_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_buffers_test
-
-# Build rule for target.
-event_buffers_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_buffers_test
-.PHONY : event_buffers_test
-
-# fast build rule for target.
-event_buffers_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_buffers_test.dir/build.make test/unit/CMakeFiles/event_buffers_test.dir/build
-.PHONY : event_buffers_test/fast
-
-#=============================================================================
-# Target rules for targets named cache_expiration_helper_test_runtest
-
-# Build rule for target.
-cache_expiration_helper_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 cache_expiration_helper_test_runtest
-.PHONY : cache_expiration_helper_test_runtest
-
-# fast build rule for target.
-cache_expiration_helper_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/cache_expiration_helper_test_runtest.dir/build.make test/unit/CMakeFiles/cache_expiration_helper_test_runtest.dir/build
-.PHONY : cache_expiration_helper_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_manager_test_runtest
-
-# Build rule for target.
-event_manager_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_manager_test_runtest
-.PHONY : event_manager_test_runtest
-
-# fast build rule for target.
-event_manager_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_manager_test_runtest.dir/build.make test/unit/CMakeFiles/event_manager_test_runtest.dir/build
-.PHONY : event_manager_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named force_proxy_io_cache_test
-
-# Build rule for target.
-force_proxy_io_cache_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 force_proxy_io_cache_test
-.PHONY : force_proxy_io_cache_test
-
-# fast build rule for target.
-force_proxy_io_cache_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/force_proxy_io_cache_test.dir/build.make test/unit/CMakeFiles/force_proxy_io_cache_test.dir/build
-.PHONY : force_proxy_io_cache_test/fast
-
-#=============================================================================
-# Target rules for targets named options_test_runtest
-
-# Build rule for target.
-options_test_runtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 options_test_runtest
-.PHONY : options_test_runtest
-
-# fast build rule for target.
-options_test_runtest/fast:
-	$(MAKE) -f test/unit/CMakeFiles/options_test_runtest.dir/build.make test/unit/CMakeFiles/options_test_runtest.dir/build
-.PHONY : options_test_runtest/fast
-
-#=============================================================================
-# Target rules for targets named event_time_aggregator_test
-
-# Build rule for target.
-event_time_aggregator_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 event_time_aggregator_test
-.PHONY : event_time_aggregator_test
-
-# fast build rule for target.
-event_time_aggregator_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/event_time_aggregator_test.dir/build.make test/unit/CMakeFiles/event_time_aggregator_test.dir/build
-.PHONY : event_time_aggregator_test/fast
-
-#=============================================================================
-# Target rules for targets named cache_expiration_helper_test
-
-# Build rule for target.
-cache_expiration_helper_test: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 cache_expiration_helper_test
-.PHONY : cache_expiration_helper_test
-
-# fast build rule for target.
-cache_expiration_helper_test/fast:
-	$(MAKE) -f test/unit/CMakeFiles/cache_expiration_helper_test.dir/build.make test/unit/CMakeFiles/cache_expiration_helper_test.dir/build
-.PHONY : cache_expiration_helper_test/fast
-
-#=============================================================================
-# Target rules for targets named testRunner
-
-# Build rule for target.
-testRunner: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 testRunner
-.PHONY : testRunner
-
-# fast build rule for target.
-testRunner/fast:
-	$(MAKE) -f test/unit/CMakeFiles/testRunner.dir/build.make test/unit/CMakeFiles/testRunner.dir/build
-.PHONY : testRunner/fast
-
-#=============================================================================
-# Target rules for targets named gmock
-
-# Build rule for target.
-gmock: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gmock
-.PHONY : gmock
-
-# fast build rule for target.
-gmock/fast:
-	$(MAKE) -f deps/gmock/CMakeFiles/gmock.dir/build.make deps/gmock/CMakeFiles/gmock.dir/build
-.PHONY : gmock/fast
-
-#=============================================================================
-# Target rules for targets named gmock_main
-
-# Build rule for target.
-gmock_main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gmock_main
-.PHONY : gmock_main
-
-# fast build rule for target.
-gmock_main/fast:
-	$(MAKE) -f deps/gmock/CMakeFiles/gmock_main.dir/build.make deps/gmock/CMakeFiles/gmock_main.dir/build
-.PHONY : gmock_main/fast
-
-#=============================================================================
-# Target rules for targets named gtest_main
-
-# Build rule for target.
-gtest_main: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gtest_main
-.PHONY : gtest_main
-
-# fast build rule for target.
-gtest_main/fast:
-	$(MAKE) -f deps/gmock/gtest/CMakeFiles/gtest_main.dir/build.make deps/gmock/gtest/CMakeFiles/gtest_main.dir/build
-.PHONY : gtest_main/fast
-
-#=============================================================================
-# Target rules for targets named gtest
-
-# Build rule for target.
-gtest: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gtest
-.PHONY : gtest
-
-# fast build rule for target.
-gtest/fast:
-	$(MAKE) -f deps/gmock/gtest/CMakeFiles/gtest.dir/build.make deps/gmock/gtest/CMakeFiles/gtest.dir/build
-.PHONY : gtest/fast
 
 src/auth/authManager.o: src/auth/authManager.cc.o
 
@@ -4080,18 +3497,17 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... client"
+	@echo "... install/local"
 	@echo "... oneclient"
 	@echo "... list_install_components"
 	@echo "... install"
-	@echo "... test"
-	@echo "... install/local"
-	@echo "... client"
 	@echo "... libmacaroons"
 	@echo "... run_tests"
 	@echo "... all_tests"
-	@echo "... refcount_test"
 	@echo "... crypto"
 	@echo "... thread_test"
+	@echo "... refcount_test"
 	@echo "... constant_time_test"
 	@echo "... stack"
 	@echo "... lhash_test"
@@ -4113,10 +3529,10 @@ help:
 	@echo "... des"
 	@echo "... rc4"
 	@echo "... conf"
-	@echo "... chacha_test"
 	@echo "... chacha"
-	@echo "... poly1305"
+	@echo "... chacha_test"
 	@echo "... poly1305_test"
+	@echo "... poly1305"
 	@echo "... ed25519_test"
 	@echo "... spake25519_test"
 	@echo "... x25519_test"
@@ -4127,16 +3543,16 @@ help:
 	@echo "... newhope_test"
 	@echo "... digest_test"
 	@echo "... digest"
+	@echo "... cipher"
 	@echo "... aead_test"
 	@echo "... cipher_test"
-	@echo "... cipher"
 	@echo "... rand"
 	@echo "... bio_test"
 	@echo "... bio"
 	@echo "... bn_test"
 	@echo "... bn"
-	@echo "... obj_test"
 	@echo "... obj"
+	@echo "... obj_test"
 	@echo "... asn1_test"
 	@echo "... asn1"
 	@echo "... engine"
@@ -4156,12 +3572,12 @@ help:
 	@echo "... hmac"
 	@echo "... cmac_test"
 	@echo "... cmac"
+	@echo "... evp_extra_test"
 	@echo "... evp_test"
 	@echo "... pbkdf_test"
-	@echo "... evp_extra_test"
 	@echo "... evp"
-	@echo "... hkdf_test"
 	@echo "... hkdf"
+	@echo "... hkdf_test"
 	@echo "... pem"
 	@echo "... x509"
 	@echo "... x509_test"
@@ -4196,50 +3612,6 @@ help:
 	@echo "... clproto"
 	@echo "... etls_obj"
 	@echo "... helpers"
-	@echo "... clientShared"
-	@echo "... example"
-	@echo "... fslogic"
-	@echo "... events"
-	@echo "... pythonProto"
-	@echo "... appmock"
-	@echo "... tokenHandler_test"
-	@echo "... options_test"
-	@echo "... example_test_runtest"
-	@echo "... subscriptions_test"
-	@echo "... subscription_handler_test_runtest"
-	@echo "... subscription_handler_test"
-	@echo "... events_test_runtest"
-	@echo "... events_test"
-	@echo "... event_time_aggregator_test_runtest"
-	@echo "... event_size_aggregator_test_runtest"
-	@echo "... event_subscription_registry_test_runtest"
-	@echo "... event_size_aggregator_test"
-	@echo "... subscriptions_test_runtest"
-	@echo "... event_handler_test"
-	@echo "... event_counter_aggregator_test_runtest"
-	@echo "... event_manager_test"
-	@echo "... example_test"
-	@echo "... event_communicator_test_runtest"
-	@echo "... event_counter_aggregator_test"
-	@echo "... cunit"
-	@echo "... tokenHandler_test_runtest"
-	@echo "... event_communicator_test"
-	@echo "... event_handler_test_runtest"
-	@echo "... event_subscription_registry_test"
-	@echo "... force_proxy_io_cache_test_runtest"
-	@echo "... event_buffers_test_runtest"
-	@echo "... event_buffers_test"
-	@echo "... cache_expiration_helper_test_runtest"
-	@echo "... event_manager_test_runtest"
-	@echo "... force_proxy_io_cache_test"
-	@echo "... options_test_runtest"
-	@echo "... event_time_aggregator_test"
-	@echo "... cache_expiration_helper_test"
-	@echo "... testRunner"
-	@echo "... gmock"
-	@echo "... gmock_main"
-	@echo "... gtest_main"
-	@echo "... gtest"
 	@echo "... src/auth/authManager.o"
 	@echo "... src/auth/authManager.i"
 	@echo "... src/auth/authManager.s"

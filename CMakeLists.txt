@@ -240,5 +240,7 @@ endif(NOT ${PROFILER_LIBRARY} MATCHES PROFILER_LIBRARY-NOTFOUND)
 install(TARGETS oneclient DESTINATION bin)
 install(DIRECTORY config/ DESTINATION ${SYSCONF_INSTALL_DIR})
 
+if(NOT APPLE)
 enable_testing()
 add_subdirectory(test)
+endif(NOT APPLE)
