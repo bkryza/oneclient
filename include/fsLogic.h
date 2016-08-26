@@ -37,6 +37,10 @@
 #include <tuple>
 #include <vector>
 
+#if defined(USE_BOOST_SHARED_MUTEX)
+#include <boost/thread/shared_mutex.hpp>
+#endif
+
 namespace one {
 
 namespace messages {
@@ -288,7 +292,11 @@ private:
 
     std::mutex m_cancelCacheExpirationTickMutex;
     std::function<void()> m_cancelCacheExpirationTick;
+#if defined(USE_BOOST_SHARED_MUTEX)
+    boost::shared_mutex m_disabledSpacesMutex;
+#else
     std::shared_timed_mutex m_disabledSpacesMutex;
+#endif
     tbb::concurrent_unordered_set<std::string> m_disabledSpaces;
 };
 

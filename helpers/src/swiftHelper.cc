@@ -11,6 +11,8 @@
 
 #include <glog/stl_logging.h>
 
+using namespace std::placeholders;
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -116,7 +118,10 @@ off_t SwiftHelper::getObjectsSize(
     throwOnError("getObjectsSize", listResponse);
 
     boost::property_tree::ptree pt;
-    boost::property_tree::read_json(*listResponse->getPayload(), pt);
+    std::stringstream ss;
+    ss << listResponse->getPayload();
+    // TODO: FIX
+    // boost::property_tree::read_json(ss, pt);
     if (pt.size() == 0) {
         return 0;
     }
@@ -153,12 +158,14 @@ void SwiftHelper::deleteObjects(CTXPtr rawCTX, std::vector<std::string> keys)
 
     Swift::Container container(account.get(), ctx->getContainerName());
     for (uint i = 0; i < keys.size(); i += MAX_DELETE_OBJECTS) {
+
         auto deleteResponse =
             std::unique_ptr<Swift::SwiftResult<std::istream *>>(
                 container.swiftDeleteObjects(
                     std::vector<std::string>(keys.begin() + i,
                         keys.begin() + std::min<size_t>(i + MAX_DELETE_OBJECTS,
                                            keys.size()))));
+
 
         throwOnError("deleteObjects", deleteResponse);
     }

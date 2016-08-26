@@ -212,7 +212,8 @@ struct fuse_operations fuseOperations()
     operations.releasedir = wrap_releasedir;
     operations.fsyncdir = wrap_fsyncdir;
     operations.create = wrap_create;
+#if defined(HAVE_UTIMENSAT)
     operations.flag_utime_omit_ok = 1;
-
+#endif
     return operations;
 }

@@ -60,7 +60,12 @@ message(STATUS "Checking for Boost.Filesystem, Boost.System and Boost.Program_op
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME     ${STATIC_LIBSTDCPP})
 set(Boost_USE_STATIC_LIBS        ${STATIC_BOOST})
+
+if(APPLE)
+find_package(Boost COMPONENTS thread filesystem program_options system REQUIRED)
+elseif(APPLE)
 find_package(Boost COMPONENTS filesystem program_options system REQUIRED)
+endif(APPLE)
 
 # Setup libsodium
 find_package(Sodium)
@@ -177,13 +182,11 @@ add_subdirectory(helpers/clproto)
 add_subdirectory(${ETLS_DIR}/src)
 add_subdirectory(helpers/src)
 
-include_directories(
+include_directories(SYSTEM
     include
     src
     ${PROJECT_BINARY_DIR}/version
-    ${HELPERS_INCLUDE_DIRS})
-
-include_directories(SYSTEM
+    ${HELPERS_INCLUDE_DIRS}
     ${HELPERS_SYSTEM_INCLUDE_DIRS}
     ${FUSE_INCLUDE_DIRS}
     ${FUSE_INCLUDE_DIRS}/..
@@ -195,7 +198,8 @@ include_directories(SYSTEM
     ${GLOG_INCLUDE_DIRS}
     ${SODIUM_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/libmacaroons
-    ${CMAKE_CURRENT_SOURCE_DIR}/deps/libmacaroons-cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/deps/libmacaroons-cpp
+    )
 
 set(CLIENT_LIBRARIES
     libmacaroons-cpp
@@ -226,6 +230,7 @@ set_target_properties(oneclient PROPERTIES
     BUILD_WITH_INSTALL_RPATH true
     INSTALL_RPATH_USE_LINK_PATH true
     INSTALL_RPATH "${CUSTOM_RPATH}")
+
 
 if(NOT ${PROFILER_LIBRARY} MATCHES PROFILER_LIBRARY-NOTFOUND)
     target_link_libraries(oneclient PRIVATE ${PROFILER_LIBRARY})

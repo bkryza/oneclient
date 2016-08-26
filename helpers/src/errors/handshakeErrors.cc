@@ -7,7 +7,10 @@
  */
 
 #include "handshakeErrors.h"
-
+#include <string>
+#include <sstream>
+#include <iostream>
+ 
 namespace one {
 namespace errors {
 namespace handshake {

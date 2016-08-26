@@ -112,7 +112,7 @@ void KeyValueAdapter::ash_write(CTXPtr ctx, const boost::filesystem::path &p,
                     auto fetchedBuf = getBlock(ctx, key, blockBuf, 0);
 
                     auto targetBlockSize = std::max(
-                        asio::buffer_size(fetchedBuf), blockOffset + blockSize);
+                        (size_t)asio::buffer_size(fetchedBuf), (size_t)(blockOffset + blockSize));
 
                     blockBuf = asio::buffer(blockBuf, targetBlockSize);
                     asio::buffer_copy(blockBuf + blockOffset, buf + bufOffset);

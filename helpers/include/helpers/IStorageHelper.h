@@ -273,8 +273,9 @@ public:
                 callback(wroteTotal, ec);
             }
             else {
-                ash_write(ctx, p, buffs[i].second, buffs[i].first,
-                    wrapCallback(ctx, p, buffs, std::move(callback), ++i,
+                int j = i++;
+                ash_write(ctx, p, buffs[j].second, buffs[j].first,
+                    wrapCallback(ctx, p, buffs, std::move(callback), i,
                               wroteTotal));
             }
         };

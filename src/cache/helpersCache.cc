@@ -25,21 +25,25 @@
 namespace one {
 namespace client {
 
+#if !defined(__APPLE__)
 constexpr unsigned int VERIFY_TEST_FILE_ATTEMPTS = 5;
 constexpr std::chrono::seconds VERIFY_TEST_FILE_DELAY{15};
+#endif
 
 HelpersCache::HelpersCache(
     communication::Communicator &communicator, Scheduler &scheduler)
     : m_communicator{communicator}
-    , m_scheduler{scheduler}
+#if !defined(__APPLE__)
+    , m_scheduler(scheduler)
+#endif
     , m_storageAccessManager{communicator, m_helperFactory}
 {
+
 #if defined(__APPLE__)
     m_thread = std::thread{[this] { 
         etls::utils::nameThread("HelpersCache");
         m_ioService.run(); 
     }};
-    
 #else
     m_thread = std::thread{[this] { m_ioService.run(); }};
     etls::utils::nameThread(m_thread, "HelpersCache");
@@ -60,7 +64,9 @@ HelpersCache::HelperPtr HelpersCache::get(const std::string &fileUuid,
         if (m_accessType.insert(acc, storageId)) {
             acc->second = AccessType::PROXY;
             acc.release();
+#if !defined(__APPLE__)
             requestStorageTestFileCreation(fileUuid, storageId);
+#endif
             forceProxyIO = true;
         }
         else {
@@ -104,6 +110,8 @@ size_t HelpersCache::HashCompare::hash(
 {
     return boost::hash<std::tuple<std::string, bool>>{}(k);
 }
+
+#if !defined(__APPLE__)
 
 void HelpersCache::requestStorageTestFileCreation(
     const std::string &fileUuid, const std::string &storageId)
@@ -150,19 +158,7 @@ void HelpersCache::handleStorageTestFile(
 
     try {
         auto helper = m_storageAccessManager.verifyStorageTestFile(*testFile);
-
-#if defined(__APPLE__)
-        //
-        // TODO: Uncomment and make it compile in clang...
-        //
-        // if (helper == nullptr) {
-        //     m_scheduler.schedule(
-        //         VERIFY_TEST_FILE_DELAY, [ =, testFile = std::move(testFile) ] {
-        //             handleStorageTestFile(testFile, storageId, attempts - 1);
-        //         });
-        //     return;
-        // }
-#else
+        
         if (helper == nullptr) {
             m_scheduler.schedule(
                 VERIFY_TEST_FILE_DELAY, [ =, testFile = std::move(testFile) ] {
@@ -170,7 +166,15 @@ void HelpersCache::handleStorageTestFile(
                 });
             return;
         }
-#endif
+
+        if (helper == nullptr) {
+            m_scheduler.schedule(
+                VERIFY_TEST_FILE_DELAY, [ =, testFile = std::move(testFile) ] {
+                    handleStorageTestFile(testFile, storageId, attempts - 1);
+                });
+            return;
+        }
+
 
         auto fileContent =
             m_storageAccessManager.modifyStorageTestFile(helper, *testFile);
@@ -242,6 +246,8 @@ void HelpersCache::handleStorageTestFileVerification(
         m_accessType.erase(acc);
     }
 }
+
+#endif
 
 } // namespace one
 } // namespace client

@@ -19,11 +19,10 @@
 #include <mutex>
 #include <utility>
 #include <vector>
-
+#include <shared_mutex>
+ 
 #if defined(USE_BOOST_SHARED_MUTEX)
 #include <boost/thread/shared_mutex.hpp>
-#else
-#include <shared_mutex>
 #endif
 
 namespace one {
@@ -183,7 +182,11 @@ private:
 
     SchedulerPtr m_scheduler;
     std::function<void()> m_cancelPeriodicMessageRequest = [] {};
+#if defined(USE_BOOST_SHARED_MUTEX)
+    boost::shared_mutex m_buffersMutex;
+#else
     std::shared_timed_mutex m_buffersMutex;
+#endif
     tbb::concurrent_hash_map<uint64_t, Buffer> m_buffers;
 };
 
@@ -203,7 +206,11 @@ auto Sequencer<LowerLayer, Scheduler>::setOnMessageCallback(
             if (!serverMsg->has_message_stream())
                 onMessageCallback(std::move(serverMsg));
             else {
+#if defined(USE_BOOST_SHARED_MUTEX)
+                std::shared_lock<boost::shared_mutex> lock{m_buffersMutex};
+#else
                 std::shared_lock<std::shared_timed_mutex> lock{m_buffersMutex};
+#endif
                 const auto streamId = serverMsg->message_stream().stream_id();
                 typename decltype(m_buffers)::accessor acc;
                 m_buffers.insert(acc, streamId);
@@ -299,8 +306,11 @@ template <class LowerLayer, class Scheduler>
 std::vector<std::pair<uint64_t, uint64_t>>
 Sequencer<LowerLayer, Scheduler>::getStreamSequenceNumbers()
 {
-    std::lock_guard<std::shared_timed_mutex> guard{m_buffersMutex};
-
+#if defined(USE_BOOST_SHARED_MUTEX)
+    std::shared_lock<boost::shared_mutex> lock{m_buffersMutex};
+#else
+    std::shared_lock<std::shared_timed_mutex> lock{m_buffersMutex};
+#endif
     std::vector<std::pair<uint64_t, uint64_t>> nums;
     nums.reserve(m_buffers.size());
 

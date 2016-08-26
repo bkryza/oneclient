@@ -11,11 +11,10 @@
 
 #include "keyValueHelper.h"
 
-#include <aws/s3/S3Errors.h>
-
 #include <map>
 #include <sstream>
 
+#include <aws/s3/S3Errors.h>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-virtual"

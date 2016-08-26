@@ -6,6 +6,7 @@
  * 'LICENSE.txt'
  */
 
+
 #ifndef ONECLIENT_HELPERS_CACHE_H
 #define ONECLIENT_HELPERS_CACHE_H
 
@@ -86,6 +87,7 @@ public:
         bool forceProxyIO = false);
 
 private:
+#if !defined(__APPLE__)
     void requestStorageTestFileCreation(
         const std::string &fileUuid, const std::string &storageId);
 
@@ -100,8 +102,12 @@ private:
     void handleStorageTestFileVerification(
         const std::error_code &ec, const std::string &storageId);
 
+#endif
+
     communication::Communicator &m_communicator;
+#if !defined(__APPLE__)
     Scheduler &m_scheduler;
+#endif
     asio::io_service m_ioService{1};
 
     asio::executor_work<asio::io_service::executor_type> m_work =
@@ -111,10 +117,10 @@ private:
 
 #if WITH_RADOS
     helpers::StorageHelperFactory m_helperFactory{
-        m_ioService, m_ioService, m_ioService, m_bufferAgent};
+         m_ioService, m_ioService, m_ioService, m_ioService, m_communicator};
 #else
     helpers::StorageHelperFactory m_helperFactory{
-        m_ioService, m_ioService, m_bufferAgent};
+        m_ioService, m_ioService, m_ioService, m_communicator};
 #endif
 
     StorageAccessManager m_storageAccessManager;
@@ -122,5 +128,5 @@ private:
 
 } // namespace one
 } // namespace client
-
 #endif // ONECLIENT_HELPERS_CACHE_H
+

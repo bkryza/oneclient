@@ -15,8 +15,8 @@ add_library(etls_obj OBJECT
     tlsApplication.cpp
     tlsSocket.cpp)
 
-target_include_directories(etls_obj SYSTEM PRIVATE
-    ${ETLS_SYSTEM_INCLUDE_DIRS})
+target_include_directories(etls_obj SYSTEM BEFORE PRIVATE
+    ${ETLS_SYSTEM_INCLUDE_DIRS} )
 
 set(ETLS_SYSTEM_INCLUDE_DIRS
     ${ETLS_SYSTEM_INCLUDE_DIRS}

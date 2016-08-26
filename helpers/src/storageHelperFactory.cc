@@ -41,8 +41,7 @@ StorageHelperFactory::StorageHelperFactory(
 #if WITH_RADOS
     m_cephService{cephService}, 
 #endif 
-    m_dioService{dioService}
-    , m_dioService{dioService}
+      m_dioService{dioService}
     , m_kvS3Service{kvS3Service}
     , m_kvSwiftService{kvSwiftService}
     , m_scheduler{std::make_unique<Scheduler>(bufferSchedulerWorkers)}

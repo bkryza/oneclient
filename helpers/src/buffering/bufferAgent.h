@@ -323,7 +323,7 @@ public:
     }
 
     void ash_fsync(CTXPtr rawCtx, const boost::filesystem::path &p,
-        bool isDataSync, VoidCallback callback)
+        bool isDataSync, VoidCallback callback) override
     {
         auto ctx = getCTX(rawCtx);
         m_helper->ash_fsync(ctx->helperCtx, p, isDataSync, std::move(callback));

@@ -6,8 +6,16 @@
  * 'LICENSE.txt'
  */
 
+
+#include <string>
+
 #include "s3Helper.h"
 #include "logging.h"
+
+#include <boost/algorithm/string.hpp>
+#include <glog/stl_logging.h>
+
+#include <string>
 
 #include <aws/core/auth/AWSCredentialsProvider.h>
 #include <aws/core/client/ClientConfiguration.h>
@@ -17,9 +25,6 @@
 #include <aws/s3/model/GetObjectRequest.h>
 #include <aws/s3/model/ListObjectsRequest.h>
 #include <aws/s3/model/PutObjectRequest.h>
-
-#include <boost/algorithm/string.hpp>
-#include <glog/stl_logging.h>
 
 #include <cstring>
 
@@ -44,10 +49,10 @@ asio::mutable_buffer S3Helper::getObject(
     auto data = asio::buffer_cast<char *>(buf);
 
     Aws::S3::Model::GetObjectRequest request{};
-    request.SetBucket(ctx->getBucket());
-    request.SetKey(key);
+    request.SetBucket(ctx->getBucket().c_str());
+    request.SetKey(key.c_str());
     request.SetRange(
-        rangeToString(offset, static_cast<off_t>(offset + size - 1)));
+        rangeToString(offset, static_cast<off_t>(offset + size - 1)).c_str());
     request.SetResponseStreamFactory([&]() {
         auto stream = new std::stringstream{};
         stream->rdbuf()->pubsetbuf(data, size);
@@ -71,8 +76,8 @@ off_t S3Helper::getObjectsSize(
     auto ctx = getCTX(std::move(rawCTX));
 
     Aws::S3::Model::ListObjectsRequest request{};
-    request.SetBucket(ctx->getBucket());
-    request.SetPrefix(adjustPrefix(std::move(prefix)));
+    request.SetBucket(ctx->getBucket().c_str());
+    request.SetPrefix(adjustPrefix(std::move(prefix)).c_str());
     request.SetDelimiter(OBJECT_DELIMITER);
     request.SetMaxKeys(1);
 
@@ -84,8 +89,8 @@ off_t S3Helper::getObjectsSize(
 
     auto key = outcome.GetResult().GetContents().back().GetKey();
 
-    return getObjectId(std::move(key)) * objectSize +
-        outcome.GetResult().GetContents().back().GetSize();
+    return getObjectId(key.c_str()) * objectSize +
+       outcome.GetResult().GetContents().back().GetSize();
 }
 
 std::size_t S3Helper::putObject(
@@ -98,8 +103,8 @@ std::size_t S3Helper::putObject(
     auto stream = std::make_shared<std::stringstream>();
     stream->rdbuf()->pubsetbuf(
         const_cast<char *>(asio::buffer_cast<const char *>(buf)), size);
-    request.SetBucket(ctx->getBucket());
-    request.SetKey(key);
+    request.SetBucket(ctx->getBucket().c_str());
+    request.SetKey(key.c_str());
     request.SetContentLength(size);
     request.SetBody(stream);
 
@@ -114,18 +119,19 @@ void S3Helper::deleteObjects(CTXPtr rawCTX, std::vector<std::string> keys)
     auto ctx = getCTX(std::move(rawCTX));
 
     Aws::S3::Model::DeleteObjectsRequest request{};
-    request.SetBucket(ctx->getBucket());
+    request.SetBucket(ctx->getBucket().c_str());
 
     while (!keys.empty()) {
-        Aws::S3::Model::Delete container;
+        Aws::S3::Model::Delete objectsToDelete;
 
         for (auto s = std::min(keys.size(), MAX_DELETE_OBJECTS); s > 0; --s) {
-            container.AddObjects(Aws::S3::Model::ObjectIdentifier{}.WithKey(
-                std::move(keys.back())));
+            std::string last_key = keys.back();
+            objectsToDelete.AddObjects(Aws::S3::Model::ObjectIdentifier{}
+                                         .WithKey(last_key.c_str()));
             keys.pop_back();
         }
 
-        request.SetDelete(std::move(container));
+        request.SetDelete(std::move(objectsToDelete));
         auto outcome = ctx->getClient()->DeleteObjects(request);
         throwOnError("DeleteObjects", outcome);
     }
@@ -135,10 +141,10 @@ std::vector<std::string> S3Helper::listObjects(
     CTXPtr rawCTX, std::string prefix)
 {
     auto ctx = getCTX(std::move(rawCTX));
-
+    std::string adjusted_prefix = adjustPrefix(prefix);
     Aws::S3::Model::ListObjectsRequest request{};
-    request.SetBucket(ctx->getBucket());
-    request.SetPrefix(adjustPrefix(std::move(prefix)));
+    request.SetBucket(ctx->getBucket().c_str());
+    request.SetPrefix(adjusted_prefix.c_str());
     request.SetDelimiter(OBJECT_DELIMITER);
 
     std::vector<std::string> keys;
@@ -148,13 +154,14 @@ std::vector<std::string> S3Helper::listObjects(
         throwOnError("ListObjects", outcome);
 
         for (const auto &object : outcome.GetResult().GetContents())
-            keys.emplace_back(object.GetKey());
+            keys.emplace_back(object.GetKey().c_str());
 
         if (!outcome.GetResult().GetIsTruncated())
             return keys;
 
         request.SetMarker(outcome.GetResult().GetNextMarker());
     }
+    return keys;
 }
 
 std::shared_ptr<S3HelperCTX> S3Helper::getCTX(CTXPtr rawCTX) const
@@ -188,7 +195,7 @@ void S3HelperCTX::setUserCTX(std::unordered_map<std::string, std::string> args)
 std::unordered_map<std::string, std::string> S3HelperCTX::getUserCTX()
 {
     return {{S3_HELPER_ACCESS_KEY_ARG, m_args.at(S3_HELPER_ACCESS_KEY_ARG)},
-        {S3_HELPER_SECRET_KEY_ARG, m_args.at(S3_HELPER_SECRET_KEY_ARG)}};
+         {S3_HELPER_SECRET_KEY_ARG, m_args.at(S3_HELPER_SECRET_KEY_ARG)}};
 }
 
 const std::string &S3HelperCTX::getBucket() const
@@ -203,8 +210,12 @@ const std::unique_ptr<Aws::S3::S3Client> &S3HelperCTX::getClient() const
 
 void S3HelperCTX::init()
 {
-    Aws::Auth::AWSCredentials credentials{m_args.at(S3_HELPER_ACCESS_KEY_ARG),
-        m_args.at(S3_HELPER_SECRET_KEY_ARG)};
+    std::string accessKeyValue = m_args.at(S3_HELPER_ACCESS_KEY_ARG);
+    std::string secretKeyValue = m_args.at(S3_HELPER_SECRET_KEY_ARG);
+    Aws::Auth::AWSCredentials credentials{accessKeyValue.c_str(),
+        secretKeyValue.c_str()};
+
+         
     Aws::Client::ClientConfiguration configuration;
 
     auto search = m_args.find(S3_HELPER_SCHEME_ARG);
@@ -212,8 +223,10 @@ void S3HelperCTX::init()
         configuration.scheme = Aws::Http::Scheme::HTTP;
 
     search = m_args.find(S3_HELPER_HOST_NAME_ARG);
-    if (search != m_args.end())
-        configuration.endpointOverride = search->second;
+    if (search != m_args.end()) {
+        std::string search_value = search->second;
+       configuration.endpointOverride = Aws::String(search_value.c_str());
+    }
 
     m_client = std::make_unique<Aws::S3::S3Client>(credentials, configuration);
 }
