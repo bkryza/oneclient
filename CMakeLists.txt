@@ -11,9 +11,6 @@ set(CMAKE_FIND_FRAMEWORK LAST)
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake ${PROJECT_SOURCE_DIR}/helpers/cmake)
 
-if(APPLE)
-set (CMAKE_CXX_FLAGS "-std=c++14 -stdlib=libc++ -Wno-overloaded-virtual -D_FILE_OFFSET_BITS=64 -D_DARWIN_USE_64_BIT_INODE")
-endif(APPLE)
 
 if(NOT SYSCONF_INSTALL_DIR)
     set(SYSCONF_INSTALL_DIR etc CACHE PATH "")
@@ -30,6 +27,14 @@ include(version.txt OPTIONAL)
 
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/version)
 configure_file(include/version.h.in ${PROJECT_BINARY_DIR}/version/version.h)
+
+# Setup etls
+set(ETLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/helpers/etls/c_src)
+
+# Setup BoringSSL
+add_subdirectory(${ETLS_DIR}/deps/boringssl)
+set(BORINGSSL_LIBRARIES ssl crypto)
+set(BORINGSSL_INCLUDE_DIRS ${ETLS_DIR}/deps/boringssl/include)
 
 # Deps
 add_subdirectory(deps/libmacaroons)
@@ -76,16 +81,8 @@ endif(APPLE)
 # Setup libsodium
 find_package(Sodium)
 
-# Setup etls
-set(ETLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/helpers/etls/c_src)
-
-# Setup BoringSSL
-add_subdirectory(${ETLS_DIR}/deps/boringssl)
-set(BORINGSSL_LIBRARIES ssl crypto)
-set(BORINGSSL_INCLUDE_DIRS ${ETLS_DIR}/deps/boringssl/include)
-
 # Setup Asio
-set(ASIO_INCLUDE_DIRS ${ETLS_DIR}/deps/asio/asio/include)
+set(ASIO_INCLUDE_DIRS ${ETLS_DIR}/deps/boringssl/include ${ETLS_DIR}/deps/asio/asio/include)
 
 # Utility libs
 find_library(LTDL_LIBRARY NAMES ltdl)
@@ -96,7 +93,7 @@ find_library(DL_LIBRARY dl)
 # Rados library (not available on OSX)
 if(NOT APPLE)
     find_library(RADOS_LIBRARY rados)
-add_definitions(-DWITH_RADOS=1)
+    add_definitions(-DWITH_RADOS=1)
 elseif(APPLE)
     add_definitions(-DWITH_RADOS=0 -DUSE_BOOST_SHARED_MUTEX)
 endif(NOT APPLE)
@@ -170,7 +167,13 @@ endif(APPLE)
 
 # Define build settings
 add_compile_options(${SECTION_FRAGMENTATION_FLAGS} -Werror -Wshadow -Wall -Wno-unused-result)
+
+if(NOT APPLE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+else(NOT APPLE)
+set (CMAKE_CXX_FLAGS "-isystem helpers/etls/c_src/deps/boringssl/include -std=c++14 -stdlib=libc++ -Wno-overloaded-virtual -D_FILE_OFFSET_BITS=64 -D_DARWIN_USE_64_BIT_INODE ${CMAKE_CXX_FLAGS}")
+endif(NOT APPLE)
+
 add_definitions(
     ${FUSE_DEFINITIONS}
     -DFUSE_USE_VERSION=29
@@ -188,16 +191,17 @@ add_subdirectory(helpers/clproto)
 add_subdirectory(${ETLS_DIR}/src)
 add_subdirectory(helpers/src)
 
-include_directories(SYSTEM
+include_directories(BEFORE
+    SYSTEM
     include
     src
+    ${BORINGSSL_INCLUDE_DIR}
     ${PROJECT_BINARY_DIR}/version
     ${HELPERS_INCLUDE_DIRS}
     ${HELPERS_SYSTEM_INCLUDE_DIRS}
     ${FUSE_INCLUDE_DIRS}
     ${FUSE_INCLUDE_DIRS}/..
     ${PROTOBUF_INCLUDE_DIR}
-    ${BORINGSSL_INCLUDE_DIR}
     ${ASIO_INCLUDE_DIRS}
     ${TBB_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
@@ -205,6 +209,7 @@ include_directories(SYSTEM
     ${SODIUM_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/libmacaroons
     ${CMAKE_CURRENT_SOURCE_DIR}/deps/libmacaroons-cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/helpers/etls/c_src/deps/boringssl/include
     )
 
 set(CLIENT_LIBRARIES
@@ -230,12 +235,18 @@ set(CLIENT_SOURCES
     $<TARGET_OBJECTS:client>
     ${PROJECT_SOURCES})
 
+
+
+set(CMAKE_CXX_FLAGS "-isystem ${BORINGSSL_INCLUDE_DIR} -std=c++14 -stdlib=libc++ -Wno-overloaded-virtual -D_FILE_OFFSET_BITS=64 -D_DARWIN_USE_64_BIT_INODE ${CMAKE_CXX_FLAGS}")
+
 add_executable(oneclient ${CLIENT_SOURCES})
 target_link_libraries(oneclient PRIVATE ${CLIENT_LIBRARIES})
 set_target_properties(oneclient PROPERTIES
     BUILD_WITH_INSTALL_RPATH true
     INSTALL_RPATH_USE_LINK_PATH true
     INSTALL_RPATH "${CUSTOM_RPATH}")
+
+set(CMAKE_CXX_FLAGS "-std=c++14 -stdlib=libc++ -Wno-overloaded-virtual -D_FILE_OFFSET_BITS=64 -D_DARWIN_USE_64_BIT_INODE ${CMAKE_CXX_FLAGS}")
 
 
 if(NOT ${PROFILER_LIBRARY} MATCHES PROFILER_LIBRARY-NOTFOUND)
@@ -245,6 +256,7 @@ endif(NOT ${PROFILER_LIBRARY} MATCHES PROFILER_LIBRARY-NOTFOUND)
 # Install config
 install(TARGETS oneclient DESTINATION bin)
 install(DIRECTORY config/ DESTINATION ${SYSCONF_INSTALL_DIR})
+
 
 if(NOT APPLE)
 enable_testing()

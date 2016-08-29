@@ -124,15 +124,19 @@ set(HELPERS_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/dummy.cc ${PROJECT_SOURCES})
 
 # Define targets
 add_library(helpersStatic STATIC ${HELPERS_SOURCES})
-target_include_directories(helpersStatic SYSTEM PUBLIC ${HELPERS_SYSTEM_INCLUDE_DIRS})
-target_include_directories(helpersStatic PUBLIC ${HELPERS_INCLUDE_DIRS})
+target_include_directories(helpersStatic BEFORE SYSTEM PUBLIC ${HELPERS_SYSTEM_INCLUDE_DIRS})
+target_include_directories(helpersStatic BEFORE PUBLIC ${HELPERS_INCLUDE_DIRS})
 set_target_properties(helpersStatic PROPERTIES
     OUTPUT_NAME helpers)
 
 add_library(helpersShared SHARED ${HELPERS_SOURCES})
-target_link_libraries(helpersShared PUBLIC ${HELPERS_LIBRARIES})
+target_link_libraries(helpersShared BEFORE PUBLIC ${HELPERS_LIBRARIES})
 target_include_directories(helpersShared BEFORE PUBLIC ${HELPERS_SYSTEM_INCLUDE_DIRS})
 target_include_directories(helpersShared BEFORE PUBLIC ${HELPERS_INCLUDE_DIRS})
+
+# Make sure the BoringSSL is before system OpenSSL include
+set(INCLUDE_DIRECTORIES "${BORINGSSL_INCLUDE_DIR} ${INCLUDE_DIRECTORIES}")
+
 set_target_properties(helpersShared PROPERTIES
     OUTPUT_NAME helpers
     BUILD_WITH_INSTALL_RPATH true

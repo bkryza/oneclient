@@ -78,6 +78,16 @@ rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
 
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+
+.PHONY : list_install_components/fast
+
 # Special rule for the target install/local
 install/local: preinstall
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
@@ -88,16 +98,6 @@ install/local: preinstall
 install/local/fast: install/local
 
 .PHONY : install/local/fast
-
-# Special rule for the target list_install_components
-list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
-.PHONY : list_install_components
-
-# Special rule for the target list_install_components
-list_install_components/fast: list_install_components
-
-.PHONY : list_install_components/fast
 
 # Special rule for the target install
 install: preinstall
@@ -110,6 +110,17 @@ install/fast: preinstall/fast
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
 	/usr/local/Cellar/cmake/3.6.1/bin/cmake -P cmake_install.cmake
 .PHONY : install/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/local/Cellar/cmake/3.6.1/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: install/strip
+
+.PHONY : install/strip/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -168,19 +179,6 @@ oneclient: cmake_check_build_system
 oneclient/fast:
 	$(MAKE) -f CMakeFiles/oneclient.dir/build.make CMakeFiles/oneclient.dir/build
 .PHONY : oneclient/fast
-
-#=============================================================================
-# Target rules for targets named libmacaroons
-
-# Build rule for target.
-libmacaroons: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 libmacaroons
-.PHONY : libmacaroons
-
-# fast build rule for target.
-libmacaroons/fast:
-	$(MAKE) -f deps/libmacaroons/CMakeFiles/libmacaroons.dir/build.make deps/libmacaroons/CMakeFiles/libmacaroons.dir/build
-.PHONY : libmacaroons/fast
 
 #=============================================================================
 # Target rules for targets named run_tests
@@ -521,19 +519,6 @@ conf/fast:
 .PHONY : conf/fast
 
 #=============================================================================
-# Target rules for targets named chacha
-
-# Build rule for target.
-chacha: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 chacha
-.PHONY : chacha
-
-# fast build rule for target.
-chacha/fast:
-	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha.dir/build
-.PHONY : chacha/fast
-
-#=============================================================================
 # Target rules for targets named chacha_test
 
 # Build rule for target.
@@ -545,6 +530,19 @@ chacha_test: cmake_check_build_system
 chacha_test/fast:
 	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha_test.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha_test.dir/build
 .PHONY : chacha_test/fast
+
+#=============================================================================
+# Target rules for targets named chacha
+
+# Build rule for target.
+chacha: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 chacha
+.PHONY : chacha
+
+# fast build rule for target.
+chacha/fast:
+	$(MAKE) -f helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha.dir/build.make helpers/etls/c_src/deps/boringssl/crypto/chacha/CMakeFiles/chacha.dir/build
+.PHONY : chacha/fast
 
 #=============================================================================
 # Target rules for targets named poly1305_test
@@ -1559,6 +1557,19 @@ xts: cmake_check_build_system
 xts/fast:
 	$(MAKE) -f helpers/etls/c_src/deps/boringssl/decrepit/xts/CMakeFiles/xts.dir/build.make helpers/etls/c_src/deps/boringssl/decrepit/xts/CMakeFiles/xts.dir/build
 .PHONY : xts/fast
+
+#=============================================================================
+# Target rules for targets named libmacaroons
+
+# Build rule for target.
+libmacaroons: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 libmacaroons
+.PHONY : libmacaroons
+
+# fast build rule for target.
+libmacaroons/fast:
+	$(MAKE) -f deps/libmacaroons/CMakeFiles/libmacaroons.dir/build.make deps/libmacaroons/CMakeFiles/libmacaroons.dir/build
+.PHONY : libmacaroons/fast
 
 #=============================================================================
 # Target rules for targets named clproto
@@ -3497,12 +3508,12 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... list_install_components"
 	@echo "... client"
 	@echo "... install/local"
 	@echo "... oneclient"
-	@echo "... list_install_components"
 	@echo "... install"
-	@echo "... libmacaroons"
+	@echo "... install/strip"
 	@echo "... run_tests"
 	@echo "... all_tests"
 	@echo "... crypto"
@@ -3529,8 +3540,8 @@ help:
 	@echo "... des"
 	@echo "... rc4"
 	@echo "... conf"
-	@echo "... chacha"
 	@echo "... chacha_test"
+	@echo "... chacha"
 	@echo "... poly1305_test"
 	@echo "... poly1305"
 	@echo "... ed25519_test"
@@ -3609,6 +3620,7 @@ help:
 	@echo "... ssl_decrepit"
 	@echo "... x509_decrepit"
 	@echo "... xts"
+	@echo "... libmacaroons"
 	@echo "... clproto"
 	@echo "... etls_obj"
 	@echo "... helpers"

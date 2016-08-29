@@ -1,5 +1,6 @@
 # Set up helpers
 set(HELPERS_SYSTEM_INCLUDE_DIRS
+    ../etls/c_src/deps/boringssl/include 
     ${FUSE_INCLUDE_DIRS}
     ${FUSE_INCLUDE_DIRS}/..
     ${PROTOBUF_INCLUDE_DIR}
@@ -29,6 +30,7 @@ target_include_directories(helpers SYSTEM PRIVATE
 target_include_directories(helpers PUBLIC
     ${HELPERS_INCLUDE_DIRS})
 
+
 set(HELPERS_INCLUDE_DIRS
     ${HELPERS_INCLUDE_DIRS}
     PARENT_SCOPE)
@@ -36,6 +38,11 @@ set(HELPERS_INCLUDE_DIRS
 set(HELPERS_SYSTEM_INCLUDE_DIRS
     ${HELPERS_SYSTEM_INCLUDE_DIRS}
     PARENT_SCOPE)
+
+
+# Make sure the BoringSSL is before system OpenSSL include
+set(INCLUDE_DIRECTORIES "../etls/c_src/deps/boringssl/include ${INCLUDE_DIRECTORIES}")
+
 
 set(HELPERS_LIBRARIES
     ${Boost_LIBRARIES}
