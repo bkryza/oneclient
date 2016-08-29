@@ -37,7 +37,13 @@ add_subdirectory(deps/libmacaroons-cpp)
 
 # Setup fuse
 message(STATUS "Checking for FUSE...")
+if(APPLE)
+# On OSX pkg-config is the easiest way to find FUSE
+find_package(PkgConfig)
+pkg_check_modules(FUSE fuse)
+else(APPLE)
 find_package(FUSE REQUIRED)
+endif(APPLE)
 
 # Setup pthreads
 message(STATUS "Checking for thread support...")

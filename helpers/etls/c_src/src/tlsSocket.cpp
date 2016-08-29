@@ -19,6 +19,8 @@
 #include <system_error>
 #include <vector>
 
+#include <boost/thread.hpp>
+
 namespace {
 
 std::vector<unsigned char> certToDer(X509 *cert)
@@ -257,13 +259,17 @@ TLSSocket::shuffleEndpoints(asio::ip::tcp::resolver::iterator iterator)
     static thread_local std::random_device rd;
     static thread_local std::default_random_engine engine{rd()};
 #else
-    static std::random_device rd;
-    static std::default_random_engine engine{rd()};
+    static boost::thread_specific_ptr<std::random_device> rd;
+    static boost::thread_specific_ptr<std::default_random_engine> engine;
+    if (!rd.get()) {
+        rd.reset(new std::random_device());
+        engine.reset(new std::default_random_engine((*rd)()));
+    }
 #endif
 
     std::vector<decltype(iterator)::value_type> endpoints;
     std::move(iterator, decltype(iterator){}, std::back_inserter(endpoints));
-    std::shuffle(endpoints.begin(), endpoints.end(), engine);
+    std::shuffle(endpoints.begin(), endpoints.end(), *engine);
 
     return endpoints;
 }
